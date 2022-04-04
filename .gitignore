@@ -1,0 +1,7 @@
+.vscode/*
+compressed/
+samples/
+*.lzwd
+lzwd
+tsm_lzwd.code-workspace
+*.txt
