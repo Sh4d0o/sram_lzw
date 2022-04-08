@@ -21,6 +21,21 @@
 
 typedef unsigned char BYTE; // from 0 to 255
 
+// typedef struct node {
+//     BYTE code;
+//     BYTE prefix; // or int index_of_prefix
+//     BYTE byte;
+//     struct node *left, *right;
+// } DNode;
+
+struct hm_element {
+    int key;
+    char *value;
+};
+
+struct dict {
+    struct hm_element *dictionary[4096]
+};
 /**
  * Prints debug text in yellow color when debugging flag is on.
  *

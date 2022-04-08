@@ -6,6 +6,27 @@
 
 #include "lzwd_lib.h"
 
+int encode_lzwd(buffer_in, nbytes, buffer_out) {
+    return nbytes - 100;
+}
+
+// static DNode *createNode(const unsigned int codeWord, const unsigned int prefixString, const unsigned char currentChar) {
+//     DNode *node;
+
+//     node = malloc(sizeof(DNode));
+
+//     if (node != NULL) {
+//         node->code = codeWord;
+//         node->prefix = prefixString;
+//         node->byte = currentChar;
+
+//         node->left = NULL;
+//         node->right = NULL;
+//     }
+
+//     return node;
+// }
+
 void pdebug(int debug, char *message) {
     if (debug) {
         printf(DEBUG_TXT "%s" RESET_TXT, message);
