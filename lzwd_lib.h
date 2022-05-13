@@ -21,36 +21,22 @@
 
 typedef unsigned char BYTE; // from 0 to 255
 
-// typedef struct node {
-//     BYTE code;
-//     BYTE prefix; // or int index_of_prefix
-//     BYTE byte;
-//     struct node *left, *right;
-// } DNode;
-
-struct hm_element {
+// entrada no dicionario
+typedef struct d_entry {
     int key;
     char *value;
-};
+    int length;
+} d_entry;
 
-struct dict {
-    struct hm_element *dictionary[4096]
-};
-/**
- * Prints debug text in yellow color when debugging flag is on.
- *
- * @param debug debug flag value
- * @param message message to print
- **/
+// dicionario
+typedef struct dict {
+    int nextIndex;
+    d_entry *entries[4096];
+} dict;
+
+int encode_lzwd(char *buffer_in, int nbytes, char *buffer_out);
+
 void pdebug(int debug, char *message);
-
-/**
- * Concatenate two strings.
- *
- * @param s1 first string
- * @param s2 second string
- **/
-char *my_concat(const char *s1, const char *s2);
 
 /**
  * Costum function to copy array.
@@ -60,12 +46,4 @@ char *my_concat(const char *s1, const char *s2);
  * @param size number of bytes to copy
  **/
 void my_array_copy(BYTE *from, BYTE *to, int size);
-
-/**
- * COnstruct byte from 1's and 0's array.
- *
- * @param byte pointer to byte
- * @param bits array of 1 and 0
- **/
-void build_byte(BYTE *byte, int bits[]);
 #endif
