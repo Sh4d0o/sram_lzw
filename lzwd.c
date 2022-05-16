@@ -75,16 +75,19 @@ int main(int argc, char *argv[]) {
         block_size = BLOCK_SIZE;
     }
     size_t nbytes = 0; // quantity of bytes read in block
-    char buffer_in[block_size];
-    char buffer_out[block_size];
+    int *buffer_in = malloc(sizeof(int) * BLOCK_SIZE);
+    int *buffer_out = malloc(sizeof(int) * BLOCK_SIZE);
     int output_size = 0;
 
     // 5. loop blocks of bytes until EOF 'aka' reading a block of 0 bytes
-    while ((nbytes = fread(buffer_in, 1, block_size, src_file)) > 0) {
+    while ((nbytes = fread(buffer_in, 1, BLOCK_SIZE, src_file)) > 0) {
+        // for (int b = 0; b < nbytes; b++) {
+        //     printf("%d ", ((char *)buffer_in)[b]);
+        // }
         block_count++;
         printf("processing block %d.\n", block_count);
         // 5.1 process block
-        output_size = encode_lzwd(buffer_in, nbytes, buffer_out);
+        output_size = lzwd_encode(buffer_in, nbytes, buffer_out);
 
         // 5.2 save size of last block and total sizes
         src_size += nbytes;
@@ -105,7 +108,6 @@ int main(int argc, char *argv[]) {
     float compression = (1 - (float)dest_size / src_size) * 100;
     printf("Total compresion: %.2f %%\n", compression);
     printf("Blocks processed: %d || Block size: %d || Last Block: %d\n", block_count, block_size, last_block_size);
-
     t_end = clock() - t_start;
     printf("Duration(TOTAL): %f seconds\n", ((double)t_end) / CLOCKS_PER_SEC);
     free(compress_name);

@@ -8,10 +8,11 @@
 #define LZWD_LIB
 
 // DEFINES
-#define BLOCK_SIZE 64000
+#define BLOCK_SIZE 5000
 #define DEBUG_TXT "\x1b[33m"
 #define RESET_TXT "\x1b[0m"
 #define USAGE_MSG "Usage: ./lzwd <filename-to-compress> [options]\nOptions:\n -d: debug mode\n -f: force rle encoding\n -s <block size>: reading block size. MIN: 64Kb\n"
+#define DICT_SIZE 4096
 
 #include "stdio.h"
 #include "stdlib.h"
@@ -23,27 +24,28 @@ typedef unsigned char BYTE; // from 0 to 255
 
 // entrada no dicionario
 typedef struct d_entry {
-    int key;
-    char *value;
-    int length;
+    int *key;             // pattern
+    int value;            // pattern index in dictionary
+    int length;           // pattern size
+    struct d_entry *next; // next pattern pointer (for collisions)
 } d_entry;
 
 // dicionario
 typedef struct dict {
-    int nextIndex;
-    d_entry *entries[4096];
+    d_entry **entries;
 } dict;
 
-int encode_lzwd(char *buffer_in, int nbytes, char *buffer_out);
+int hash(int *key, int size);
+dict *create_dict();
+d_entry *map_pair(int *key, int value, int size);
+void dict_add(dict *dictionary, int *key, int value, int size);
+int dict_get_value(dict *dictionary, int *key, int size);
+
+int compare_pattern(int *pattern_x, int size_x, int *pattern_y, int size_y);
+int *concat_pattern(int *pattern_x, int size_x, int *pattern_y, int size_y);
+
+int lzwd_encode(int *buffer_in, int nbytes, int *buffer_out);
 
 void pdebug(int debug, char *message);
 
-/**
- * Costum function to copy array.
- *
- * @param from buffer to read from
- * @param to buffer to copy to
- * @param size number of bytes to copy
- **/
-void my_array_copy(BYTE *from, BYTE *to, int size);
 #endif
