@@ -20,7 +20,7 @@
 #include "time.h"   //for execution timing
 #include "unistd.h"
 
-typedef unsigned char BYTE; // from 0 to 255
+typedef unsigned char byte; // from 0 to 255
 
 // entrada no dicionario
 typedef struct d_entry {
@@ -43,6 +43,7 @@ int dict_get_value(dict *dictionary, int *key, int size);
 
 int compare_pattern(int *pattern_x, int size_x, int *pattern_y, int size_y);
 int *concat_pattern(int *pattern_x, int size_x, int *pattern_y, int size_y);
+// void concat_pattern(int *pattern_x, int size_x, int *pattern_y, int size_y, int *result);
 
 int lzwd_encode(int *buffer_in, int nbytes, int *buffer_out);
 

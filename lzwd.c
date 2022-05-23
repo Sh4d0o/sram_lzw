@@ -81,9 +81,9 @@ int main(int argc, char *argv[]) {
 
     // 5. loop blocks of bytes until EOF 'aka' reading a block of 0 bytes
     while ((nbytes = fread(buffer_in, 1, BLOCK_SIZE, src_file)) > 0) {
-        // for (int b = 0; b < nbytes; b++) {
-        //     printf("%d ", ((char *)buffer_in)[b]);
-        // }
+        for (int b = 0; b < nbytes; b++) {
+            printf("%d ", ((unsigned char *)buffer_in)[b]);
+        }
         block_count++;
         printf("processing block %d.\n", block_count);
         // 5.1 process block

@@ -1,5 +1,5 @@
 CC = gcc #compiler to use
-CFLAGS = -Wall #compiler flags
+CFLAGS = -g -Wall #compiler flags
 TARGET = lzwd
 
 build: lzwd.c lzwd_lib.c
