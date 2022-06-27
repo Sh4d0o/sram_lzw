@@ -5,3 +5,4 @@ samples/
 lzwd
 tsm_lzwd.code-workspace
 *.txt
+prints/

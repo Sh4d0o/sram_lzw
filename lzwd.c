@@ -6,13 +6,16 @@
 
 #include "lzwd_lib.h"
 
+int debugflag; // if true use debug moode
+int sizeflag;  // if true use costum block size
+
 int main(int argc, char *argv[]) {
     //---Program variables---//
     clock_t t_start = clock(), t_end; // clocks for executing time calculations
 
     FILE *src_file, *dest_file;
-    int debugflag = 0; // if true use debug moode
-    int sizeflag = 0;  // if true use costum block size
+    debugflag = 0; // if true use debug moode
+    sizeflag = 0;  // if true use costum block size
     int block_size = 0;
     int src_size = 0, dest_size = 0, block_count = 0, last_block_size = 0; // output auxiliars
 
@@ -81,11 +84,15 @@ int main(int argc, char *argv[]) {
 
     // 5. loop blocks of bytes until EOF 'aka' reading a block of 0 bytes
     while ((nbytes = fread(buffer_in, 1, BLOCK_SIZE, src_file)) > 0) {
-        for (int b = 0; b < nbytes; b++) {
-            printf("%d ", ((unsigned char *)buffer_in)[b]);
-        }
+
         block_count++;
-        printf("processing block %d.\n", block_count);
+        if (debugflag) {
+            printf("processing block %d. Input:\n", block_count);
+            for (int b = 0; b < nbytes; b++) {
+                printf("%d ", ((unsigned char *)buffer_in)[b]);
+            }
+            printf("\n");
+        }
         // 5.1 process block
         output_size = lzwd_encode(buffer_in, nbytes, buffer_out);
 
@@ -95,21 +102,37 @@ int main(int argc, char *argv[]) {
         last_block_size = nbytes;
 
         // 5.3 write encoded block to output file
-        fwrite(buffer_out, output_size, 1, dest_file);
-        printf("processed block %d.\n", block_count);
+        // TODO: parse output buffer to short int
+        // fwrite(buffer_out, output_size, 1, dest_file);
+
+        if (DEBUG_FLAG) {
+            printf("processed block %d. Output: \n", block_count);
+            for (int b = 0; b < output_size; b++) {
+                printf("%d ", buffer_out[b]);
+            }
+            printf("\n");
+        }
     }
 
     // Z. Program Output
     printf("Author: Tiago & Joana\n");
-    time_t now;
-    time(&now); // get current date and time
-    printf("Execution time: %s", ctime(&now));
+    // time_t now;
+    // time(&now); // get current date and time
+    // printf("Time of execution: %s", ctime(&now));
+    // now = time(NULL);
+    // struct tm now_tm = *localtime(&now);
+    // printf("Time of execution: %d-%d-%d %d:%d:%d\n",
+    //        now_tm.tm_mday, now_tm.tm_mon + 1, now_tm.tm_year + 1900, now_tm.tm_hour, now_tm.tm_min, now_tm.tm_sec);
     printf("Source: %s with %d bytes\nCompressed: %s with %d bytes\n", src_name, src_size, compress_name, dest_size);
     float compression = (1 - (float)dest_size / src_size) * 100;
     printf("Total compresion: %.2f %%\n", compression);
     printf("Blocks processed: %d || Block size: %d || Last Block: %d\n", block_count, block_size, last_block_size);
     t_end = clock() - t_start;
     printf("Duration(TOTAL): %f seconds\n", ((double)t_end) / CLOCKS_PER_SEC);
+
+    // memory cleanup
+    free(buffer_in);
+    free(buffer_out);
     free(compress_name);
     free(src_name);
     fclose(src_file);
