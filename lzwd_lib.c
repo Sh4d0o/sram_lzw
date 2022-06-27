@@ -43,7 +43,7 @@ dict *create_dict() {
 
     // set first 256 entries
     int *p = malloc(sizeof(int) * 1);
-    for (int p_idx = 0; p_idx < 256; p_idx++) {
+    for (int p_idx = 1; p_idx < 257; p_idx++) {
         p[0] = p_idx;
         dict_add(dictionary, p, p_idx, 1);
     }
@@ -323,21 +323,26 @@ int lzwd_encode(int *buffer_in, int nbytes, int *buffer_out) {
 
     int N = 0; // apontador de leitura do bloco
     int M = 0; // apontador de escrita do output
-    int nextIndex = 256;
+    int nextIndex = 257;
     dict *dictionary = create_dict();
 
     printf(DEBUG_TXT "%s" RESET_TXT, "Dictionary Initializated.\n");
 
-    int save_pj_index = 0;
+    /*aux variables*/
+    int max_pattern_size = 1;
     int save_N_Pk = 0;
-    int exist_j = 1; // exit condition flag
-    int size_j = 0;  // pattern size
+    int last_idx_k = 0;
+
+    // pattern Pj
+    int idx_j = -1;
+    int size_j = 0;
     // int Pj[nbytes];  // longest pattern possible(full block)
     int *Pj = malloc(nbytes * sizeof(int));
     memset(Pj, 0, nbytes * sizeof(int));
 
-    int exist_k = 1; // exit condition flag
-    int size_k = 0;  // pattern size
+    // pattern Pk
+    int idx_k = -1; // exit condition flag
+    int size_k = 0; // pattern size
     // int Pk[nbytes];  // longest pattern possible(full block)
     int *Pk = malloc(nbytes * sizeof(int));
     memset(Pk, 0, nbytes * sizeof(int));
@@ -347,64 +352,87 @@ int lzwd_encode(int *buffer_in, int nbytes, int *buffer_out) {
     memset(Pm, 0, 2 * nbytes * sizeof(int));
 
     do {
-        N = save_N_Pk;
+        if ((nbytes - N) < max_pattern_size) {
+            max_pattern_size = nbytes - N;
+        }
+
+        N = save_N_Pk; /*restore reader pointer to the begging of Pk*/
 
         // 1. Ler Pj apartir de N até padrão não existir ou chegar ao final do ficheiro.
-        while (exist_j != -1 && N < nbytes) {
-            Pj[size_j++] = ((unsigned char *)buffer_in)[N++]; /*concat new simbol to pattern*/
 
-            if (DEBUG_FLAG) {
-                printf("::Pj-> ");
-                for (int b = 0; b < size_j; b++) {
-                    printf("%d ", Pj[b]);
-                }
-                printf("\n");
+        for (int i = 0; i < max_pattern_size; i++) { /*extract pattern with current_size symbols*/
+            Pj[size_j++] = ((unsigned char *)buffer_in)[N++];
+        }
+
+        if (DEBUG_FLAG) {
+            printf("::Pj-> ");
+            for (int b = 0; b < size_j; b++) {
+                printf("%d ", Pj[b]);
             }
-            save_pj_index = exist_j;                          /*to later write to output*/
-            exist_j = dict_get_value(dictionary, Pj, size_j); /*check if new pattern exists*/
+            printf("\n");
+        }
 
-            if (exist_j == -1) { // Pj not found
+        /*check if Pj exists, if pattern not found reduce size by 1*/
+        while (idx_j == -1) {
+            idx_j = dict_get_value(dictionary, Pj, size_j);
+            if (idx_j == -1) {
+                size_j--;
                 N--;
-                size_j--; /* ignore last symbol added to pattern*/
-
-                save_N_Pk = N;
-                // ler Pk aseguir ao final de Pj até padrão não existir ou chegar ao final do ficheiro.
-                while (exist_k != -1 && N < nbytes) {
-
-                    Pk[size_k++] = ((unsigned char *)buffer_in)[N++];
-
-                    if (DEBUG_FLAG) {
-                        printf("::Pk-> ");
-                        for (int b = 0; b < size_k; b++) {
-                            printf("%d ", Pk[b]);
-                        }
-                        printf("\n");
-                    }
-                    exist_k = dict_get_value(dictionary, Pk, size_k);
-                    if (exist_k == -1) {
-                        N--;
-                        size_k--;
-
-                        // add pattern Pm(Pj+Pk) to dict
-                        Pm = concat_pattern(Pj, size_j, Pk, size_k);
-
-                        dict_add(dictionary, Pm, nextIndex, size_j + size_k);
-
-                        // save Pj index to output
-                        buffer_out[M] = save_pj_index;
-                        M++;
-                        if (DEBUG_FLAG) {
-                            printf("::OUT-> %d \n", save_pj_index);
-                        }
-                        nextIndex++;
-                    }
-                }
-                // TODO: save Pk when is last pattern of the buffer
             }
         }
+        save_N_Pk = N; /*temp save readder pointer*/
+
+        // ler Pk aseguir ao final de Pj até padrão não existir ou chegar ao final do ficheiro.
+        for (int i = 0; i < max_pattern_size; i++) {
+            Pk[size_k++] = ((unsigned char *)buffer_in)[N++];
+        }
+
+        if (DEBUG_FLAG) {
+            printf("::Pk-> ");
+            for (int b = 0; b < size_k; b++) {
+                printf("%d ", Pk[b]);
+            }
+            printf("\n");
+        }
+
+        /*check if Pk exists, if pattern not found reduce size by 1*/
+        while (idx_k == -1) {
+            idx_k = dict_get_value(dictionary, Pk, size_k);
+            if (idx_k == -1) {
+                size_k--;
+                N--;
+            }
+        }
+
+        // add pattern Pm(Pj+Pk) to dict
+        Pm = concat_pattern(Pj, size_j, Pk, size_k);
+        dict_add(dictionary, Pm, nextIndex, size_j + size_k);
+        if (max_pattern_size < (size_j + size_k))
+            max_pattern_size = size_j + size_k;
+
+        // save Pj index to output
+        buffer_out[M] = idx_j;
+        M++;
+        if (DEBUG_FLAG) {
+            printf("::OUT-> %d \n", idx_j);
+        }
+        nextIndex++;
+
+        // TODO: if dict full, clear and start from 257
+        if (nextIndex == DICT_SIZE) {
+            dict_free(dictionary);
+            free(dictionary);
+            nextIndex = 257;
+            dictionary = create_dict();
+        }
+
         size_j = size_k = 0;
-        exist_j = exist_k = 0;
+        last_idx_k = idx_k;
+        idx_j = idx_k = -1;
     } while (N < nbytes);
+
+    buffer_out[M] = last_idx_k;
+    M++;
 
     // if (DEBUG_FLAG)
     //     dict_print(dictionary);

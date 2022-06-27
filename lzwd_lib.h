@@ -8,7 +8,7 @@
 #define LZWD_LIB
 
 // DEFINES
-#define BLOCK_SIZE 500
+#define BLOCK_SIZE 5000
 #define DEBUG_TXT "\x1b[33m"
 #define RESET_TXT "\x1b[0m"
 #define USAGE_MSG "Usage: ./lzwd <filename-to-compress> [options]\nOptions:\n -d: debug mode\n -f: force rle encoding\n -s <block size>: reading block size. MIN: 64Kb\n"
