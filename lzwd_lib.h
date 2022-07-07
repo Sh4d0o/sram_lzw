@@ -8,12 +8,13 @@
 #define LZWD_LIB
 
 // DEFINES
-#define BLOCK_SIZE 5000
+#define BLOCK_SIZE 64000
 #define DEBUG_TXT "\x1b[33m"
 #define RESET_TXT "\x1b[0m"
 #define USAGE_MSG "Usage: ./lzwd <filename-to-compress> [options]\nOptions:\n -d: debug mode\n -f: force rle encoding\n -s <block size>: reading block size. MIN: 64Kb\n"
 #define DICT_SIZE 4096
-#define DEBUG_FLAG 1
+
+extern int debugflag;
 
 #include "stdio.h"
 #include "stdlib.h"
@@ -42,9 +43,11 @@ d_entry *map_pair(int *key, int value, int size);
 void dict_add(dict *dictionary, int *key, int value, int size);
 int dict_get_value(dict *dictionary, int *key, int size);
 
+void dict_print(dict *dictionary);
+void dict_free(dict *dictionary);
+
 int compare_pattern(int *pattern_x, int size_x, int *pattern_y, int size_y);
-int *concat_pattern(int *pattern_x, int size_x, int *pattern_y, int size_y);
-// void concat_pattern(int *pattern_x, int size_x, int *pattern_y, int size_y, int *result);
+void concat_pattern(int *pattern_x, int size_x, int *pattern_y, int size_y, int *result);
 
 int lzwd_encode(int *buffer_in, int nbytes, int *buffer_out);
 

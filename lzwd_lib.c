@@ -13,7 +13,7 @@
  **/
 int hash(int *key, int size) {
     unsigned int hash_value = 0;
-    // if (DEBUG_FLAG) {
+    // if (debugflag) {
     //     printf("hashstring:");
     //     for (int i = 0; i < size; i++) {
     //         printf("%d", key[i]);
@@ -30,7 +30,7 @@ int hash(int *key, int size) {
 /**
  * Creates new dictionary. Allocates memory for it. Sets 256 first entries.
  *
- * @return Pointer to dictionary
+ * @return Pointer to newly created dictionary.
  **/
 dict *create_dict() {
     dict *dictionary = malloc(sizeof(dict) * 1);
@@ -43,7 +43,7 @@ dict *create_dict() {
 
     // set first 256 entries
     int *p = malloc(sizeof(int) * 1);
-    for (int p_idx = 1; p_idx < 257; p_idx++) {
+    for (int p_idx = 0; p_idx < 257; p_idx++) {
         p[0] = p_idx;
         dict_add(dictionary, p, p_idx, 1);
     }
@@ -52,7 +52,14 @@ dict *create_dict() {
     return dictionary;
 }
 
-/* key - pattern, value - pattern index, size -  pattern size*/
+/**
+ * Creates new dictionary entry. Allocating memory for it.
+ *
+ * @param key pattern.
+ * @param value pattern index.
+ * @param size pattern size.
+ * @return Pointer to dictionary entry.
+ **/
 d_entry *map_pair(int *key, int value, int size) {
 
     d_entry *entry = malloc(sizeof(d_entry));
@@ -69,27 +76,33 @@ d_entry *map_pair(int *key, int value, int size) {
     return entry;
 }
 
-/* key - pattern, value - pattern index, size - pattern size*/
+/**
+ * Adds new dictionary entry. Checks for collisions.
+ *
+ * @param dictionary pointer to dictionary where to add entry.
+ * @param key pattern.
+ * @param value pattern index.
+ * @param size pattern size.
+ **/
 void dict_add(dict *dictionary, int *key, int value, int size) {
 
     int slot = hash(key, size);
     d_entry *new = dictionary->entries[slot];
-    if (DEBUG_FLAG) {
-        printf("adding to slot [%d]: idx[%d]", slot, value);
+    if (debugflag) {
+        printf("adding to [%d] idx:%d P:", slot, value);
         for (int a = 0; a < size; a++) {
             printf("%d ", key[a]);
         }
     }
-    // entry empty so insert
+    // found entry empty so insert
     if (new == -1) {
-        if (DEBUG_FLAG)
-            printf("Empty entry. Added.\n");
         dictionary->entries[slot] = map_pair(key, value, size);
+        if (debugflag)
+            printf("Empty entry. Added.\n");
         return;
     }
 
     // otherwise an colission occured
-    // printf("Found collision.");
     d_entry *prev;
     while (new != -1) {
         // next in chain
@@ -99,18 +112,24 @@ void dict_add(dict *dictionary, int *key, int value, int size) {
 
     // end of chain reached, add new
     prev->next = map_pair(key, value, size);
-    if (DEBUG_FLAG)
-        printf("Added to end of chain.\n");
+    if (debugflag)
+        printf("Found collision. Added to end of chain.\n");
 }
 
-/* key - pattern, size - pattern size
-return -1 if no match found or idx of matching pattern*/
+/**
+ * Searches dictionary for entry with a pattern equal to the one provided.
+ *
+ * @param dictionary pointer to dictionary where to search entry.
+ * @param key pattern.
+ * @param size pattern size.
+ * @return -1 if no match found or idx of matching pattern.
+ **/
 int dict_get_value(dict *dictionary, int *key, int size) {
 
     int idx = hash(key, size);
     d_entry *d_search = dictionary->entries[idx];
 
-    if (DEBUG_FLAG) {
+    if (debugflag) {
         printf("searching:");
         for (int a = 0; a < size; a++) {
             printf("%d ", key[a]);
@@ -119,7 +138,7 @@ int dict_get_value(dict *dictionary, int *key, int size) {
     }
     // no match found
     if (d_search == -1) {
-        if (DEBUG_FLAG)
+        if (debugflag)
             printf("Match not found. Empty entry.\n");
         return -1;
     }
@@ -128,7 +147,7 @@ int dict_get_value(dict *dictionary, int *key, int size) {
     while (d_search != -1) {
         // check equal key
         if (compare_pattern(key, size, d_search->key, d_search->length) == 1) {
-            if (DEBUG_FLAG)
+            if (debugflag)
                 printf("Match found. Idx: %d\n", d_search->value);
             return d_search->value;
         }
@@ -137,7 +156,7 @@ int dict_get_value(dict *dictionary, int *key, int size) {
     }
 
     // in case key hashes to existing slot but key doesnt match
-    if (DEBUG_FLAG)
+    if (debugflag)
         printf("Match not found. No entries match.\n");
     return -1;
 }
@@ -145,7 +164,7 @@ int dict_get_value(dict *dictionary, int *key, int size) {
 /* index - pattern index
 out_pattern - buffer where to save the matched pattern
 return -1 if no match found or pattern of matching index*/
-int dict_get_pattern(dict *dictionary, int index, int *out_pattern) {
+int dict_get_key(dict *dictionary, int index, int *out_pattern) {
     // cycle the whole dictionary
     for (int i = 0; i < DICT_SIZE; i++) {
         d_entry *d_entry = dictionary->entries[i];
@@ -221,33 +240,21 @@ int compare_pattern(int *pattern_x, int size_x, int *pattern_y, int size_y) {
  * @param size_y size of 2nd pattern
  * @param result where to save result
  **/
-int *concat_pattern(int *pattern_x, int size_x, int *pattern_y, int size_y) {
-    int *result = malloc(size_x + size_y);
+void concat_pattern(int *pattern_x, int size_x, int *pattern_y, int size_y, int *result) {
     for (int i = 0; i < size_x; i++) {
         result[i] = pattern_x[i];
     }
     for (int a = size_x, b = 0; b < size_y; a++, b++) {
         result[a] = pattern_y[b];
     }
-    if (DEBUG_FLAG) {
+    if (debugflag) {
         printf("Concatenated pattern:\n");
         for (int j = 0; j < (size_x + size_y); j++) {
             printf("%d", result[j]);
         }
         printf("\n");
     }
-    return result;
 }
-// void concat_pattern(int *pattern_x, int size_x, int *pattern_y, int size_y, int *result) {
-//     // int *result = malloc(size_x + size_y);
-//     for (int i = 0; i < size_x; i++) {
-//         result[i] = pattern_x[i];
-//     }
-//     for (int a = size_x, b = 0; b < size_y; a++, b++) {
-//         result[a] = pattern_y[b];
-//     }
-//     // return result;
-// }
 
 void dict_print(dict *dictionary) {
     printf("Printing dictionary: \n[slot][idx][pattern]\n");
@@ -271,37 +278,41 @@ void dict_print(dict *dictionary) {
 }
 
 // TO-DO
-// void dict_print_order(dict *dictionary) {
-//     printf("Printing dictionary in order: \n[slot][idx][pattern]\n");
-//     for (int i = 0; i < DICT_SIZE; i++) {
-//         d_entry *d_entry = dict_get_entry(dictionary, i);
-//         if (d_entry == -1)
-//             continue;
-//         else {
-//             printf("[%d][%d][", i, d_entry->value);
-//             for (int a = 0; a < d_entry->length; a++) {
-//                 printf("%d ", d_entry->key[a]);
-//             }
-//             printf("]\n");
-//         }
-//     }
-// }
+void dict_print_order(dict *dictionary) {
+    printf("Printing dictionary in order: \n[slot][idx][pattern]\n");
+    for (int i = 0; i < DICT_SIZE; i++) {
+        d_entry *d_entry = dict_get_entry(dictionary, i);
+        if (d_entry == -1)
+            continue;
+        else {
+            printf("[%d][%d][", i, d_entry->value);
+            for (int a = 0; a < d_entry->length; a++) {
+                printf("%d ", d_entry->key[a]);
+            }
+            printf("]\n");
+        }
+    }
+}
 
 void dict_free(dict *dictionary) {
     for (int i = 0; i < DICT_SIZE; i++) {
         d_entry *d_entry = dictionary->entries[i];
-        if (d_entry == -1)
+        if (d_entry == -1) {
             continue;
-        else {
+        } else {
             // cycle the chain
             while (d_entry != -1) {
-
                 // next in chain
+                free(d_entry->key);
                 d_entry = d_entry->next;
             }
         }
+        if (debugflag)
+            printf("Cleared slot[%d].\n", i);
     }
-    printf(DEBUG_TXT "%s" RESET_TXT, "Cleared dictionary.\n");
+    free(dictionary->entries);
+    if (debugflag)
+        printf(DEBUG_TXT "%s" RESET_TXT, "Cleared dictionary.\n");
 }
 
 /**
@@ -314,7 +325,7 @@ void dict_free(dict *dictionary) {
  **/
 int lzwd_encode(int *buffer_in, int nbytes, int *buffer_out) {
     // print buffer de entrada
-    // if (DEBUG_FLAG) {
+    // if (debugflag) {
     //     printf("buffer_in (lzwd_encode):\n");
     //     for (int b = 0; b < nbytes; b++) {
     //         printf("%d ", ((unsigned char *)buffer_in)[b]);
@@ -326,7 +337,8 @@ int lzwd_encode(int *buffer_in, int nbytes, int *buffer_out) {
     int nextIndex = 257;
     dict *dictionary = create_dict();
 
-    printf(DEBUG_TXT "%s" RESET_TXT, "Dictionary Initializated.\n");
+    if (debugflag)
+        printf(DEBUG_TXT "%s" RESET_TXT, "Dictionary Initializated.\n");
 
     /*aux variables*/
     int max_pattern_size = 1;
@@ -337,34 +349,32 @@ int lzwd_encode(int *buffer_in, int nbytes, int *buffer_out) {
     int idx_j = -1;
     int size_j = 0;
     // int Pj[nbytes];  // longest pattern possible(full block)
-    int *Pj = malloc(nbytes * sizeof(int));
-    memset(Pj, 0, nbytes * sizeof(int));
+    int *Pj = malloc(1 * sizeof(int));
+    memset(Pj, 0, 1 * sizeof(int));
 
     // pattern Pk
     int idx_k = -1; // exit condition flag
     int size_k = 0; // pattern size
     // int Pk[nbytes];  // longest pattern possible(full block)
-    int *Pk = malloc(nbytes * sizeof(int));
-    memset(Pk, 0, nbytes * sizeof(int));
+    int *Pk = malloc(1 * sizeof(int));
+    memset(Pk, 0, 1 * sizeof(int));
 
     // int Pm[nbytes];
-    int *Pm = malloc(2 * nbytes * sizeof(int));
-    memset(Pm, 0, 2 * nbytes * sizeof(int));
+    int *Pm = malloc(2 * sizeof(int));
+    memset(Pm, 0, 2 * sizeof(int));
 
     do {
         if ((nbytes - N) < max_pattern_size) {
             max_pattern_size = nbytes - N;
         }
-
         N = save_N_Pk; /*restore reader pointer to the begging of Pk*/
 
         // 1. Ler Pj apartir de N até padrão não existir ou chegar ao final do ficheiro.
-
         for (int i = 0; i < max_pattern_size; i++) { /*extract pattern with current_size symbols*/
             Pj[size_j++] = ((unsigned char *)buffer_in)[N++];
         }
 
-        if (DEBUG_FLAG) {
+        if (debugflag) {
             printf("::Pj-> ");
             for (int b = 0; b < size_j; b++) {
                 printf("%d ", Pj[b]);
@@ -380,14 +390,14 @@ int lzwd_encode(int *buffer_in, int nbytes, int *buffer_out) {
                 N--;
             }
         }
-        save_N_Pk = N; /*temp save readder pointer*/
+        save_N_Pk = N; /*temp save reader pointer*/
 
         // ler Pk aseguir ao final de Pj até padrão não existir ou chegar ao final do ficheiro.
         for (int i = 0; i < max_pattern_size; i++) {
             Pk[size_k++] = ((unsigned char *)buffer_in)[N++];
         }
 
-        if (DEBUG_FLAG) {
+        if (debugflag) {
             printf("::Pk-> ");
             for (int b = 0; b < size_k; b++) {
                 printf("%d ", Pk[b]);
@@ -405,15 +415,28 @@ int lzwd_encode(int *buffer_in, int nbytes, int *buffer_out) {
         }
 
         // add pattern Pm(Pj+Pk) to dict
-        Pm = concat_pattern(Pj, size_j, Pk, size_k);
+        concat_pattern(Pj, size_j, Pk, size_k, Pm);
         dict_add(dictionary, Pm, nextIndex, size_j + size_k);
-        if (max_pattern_size < (size_j + size_k))
+        if (max_pattern_size < (size_j + size_k)) {
             max_pattern_size = size_j + size_k;
 
+            // TODO-review memory manipulation
+            int *new_Pj = realloc(Pj, max_pattern_size * sizeof(int));
+            // memset(Pj, 0, max_pattern_size * sizeof(int));
+            Pj = new_Pj;
+
+            int *new_Pk = realloc(Pk, max_pattern_size * sizeof(int));
+            // memset(Pk, 0, max_pattern_size * sizeof(int));
+            Pk = new_Pk;
+
+            int *new_Pm = realloc(Pm, 2 * max_pattern_size * sizeof(int));
+            // memset(Pk, 0, max_pattern_size * sizeof(int));
+            Pm = new_Pm;
+        }
         // save Pj index to output
         buffer_out[M] = idx_j;
         M++;
-        if (DEBUG_FLAG) {
+        if (debugflag) {
             printf("::OUT-> %d \n", idx_j);
         }
         nextIndex++;
@@ -434,8 +457,8 @@ int lzwd_encode(int *buffer_in, int nbytes, int *buffer_out) {
     buffer_out[M] = last_idx_k;
     M++;
 
-    // if (DEBUG_FLAG)
-    //     dict_print(dictionary);
+    if (debugflag)
+        dict_print(dictionary);
 
     dict_free(dictionary);
     free(dictionary);

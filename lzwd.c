@@ -6,16 +6,14 @@
 
 #include "lzwd_lib.h"
 
-int debugflag; // if true use debug moode
-int sizeflag;  // if true use costum block size
+int debugflag = 0; // if true use debug moode
+int sizeflag = 0;  // if true use costum block size
 
 int main(int argc, char *argv[]) {
     //---Program variables---//
     clock_t t_start = clock(), t_end; // clocks for executing time calculations
 
     FILE *src_file, *dest_file;
-    debugflag = 0; // if true use debug moode
-    sizeflag = 0;  // if true use costum block size
     int block_size = 0;
     int src_size = 0, dest_size = 0, block_count = 0, last_block_size = 0; // output auxiliars
 
@@ -30,7 +28,7 @@ int main(int argc, char *argv[]) {
         case 's':
             sizeflag = 1;
             block_size = atoi(optarg);
-            pdebug(debugflag, "Costum block size.\n");
+            pdebug(debugflag, "Using costum block size.");
             break;
         case '?':
             printf("%s\n", USAGE_MSG);
@@ -105,8 +103,8 @@ int main(int argc, char *argv[]) {
         // TODO: parse output buffer to short int
         // fwrite(buffer_out, output_size, 1, dest_file);
 
-        if (DEBUG_FLAG) {
-            printf("processed block %d. Output: \n", block_count);
+        if (debugflag) {
+            printf("Output block %d: \n", block_count);
             for (int b = 0; b < output_size; b++) {
                 printf("%d ", buffer_out[b]);
             }
@@ -116,9 +114,9 @@ int main(int argc, char *argv[]) {
 
     // Z. Program Output
     printf("Author: Tiago & Joana\n");
-    // time_t now;
-    // time(&now); // get current date and time
-    // printf("Time of execution: %s", ctime(&now));
+    time_t now;
+    time(&now); // get current date and time
+    printf("Time of execution: %s", ctime(&now));
     // now = time(NULL);
     // struct tm now_tm = *localtime(&now);
     // printf("Time of execution: %d-%d-%d %d:%d:%d\n",
