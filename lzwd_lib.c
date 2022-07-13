@@ -325,12 +325,13 @@ void dict_free(dict *dictionary) {
  **/
 int lzwd_encode(int *buffer_in, int nbytes, int *buffer_out) {
     // print buffer de entrada
-    // if (debugflag) {
-    //     printf("buffer_in (lzwd_encode):\n");
-    //     for (int b = 0; b < nbytes; b++) {
-    //         printf("%d ", ((unsigned char *)buffer_in)[b]);
-    //     }
-    // }
+    if (textflag || debugflag) {
+        printf("buffer_in (lzwd_encode):\n");
+        for (int b = 0; b < nbytes; b++) {
+            printf("%d ", ((unsigned char *)buffer_in)[b]);
+        }
+        printf("\n");
+    }
 
     int N = 0; // apontador de leitura do bloco
     int M = 0; // apontador de escrita do output
@@ -348,15 +349,13 @@ int lzwd_encode(int *buffer_in, int nbytes, int *buffer_out) {
     // pattern Pj
     int idx_j = -1;
     int size_j = 0;
-    // int Pj[nbytes];  // longest pattern possible(full block)
-    int *Pj = malloc(1 * sizeof(int));
+    int *Pj = malloc(1 * sizeof(int)); // longest pattern possible(full block)
     memset(Pj, 0, 1 * sizeof(int));
 
     // pattern Pk
-    int idx_k = -1; // exit condition flag
-    int size_k = 0; // pattern size
-    // int Pk[nbytes];  // longest pattern possible(full block)
-    int *Pk = malloc(1 * sizeof(int));
+    int idx_k = -1;                    // exit condition flag
+    int size_k = 0;                    // pattern size
+    int *Pk = malloc(1 * sizeof(int)); // longest pattern possible(full block)
     memset(Pk, 0, 1 * sizeof(int));
 
     // int Pm[nbytes];
@@ -422,15 +421,12 @@ int lzwd_encode(int *buffer_in, int nbytes, int *buffer_out) {
 
             // TODO-review memory manipulation
             int *new_Pj = realloc(Pj, max_pattern_size * sizeof(int));
-            // memset(Pj, 0, max_pattern_size * sizeof(int));
             Pj = new_Pj;
 
             int *new_Pk = realloc(Pk, max_pattern_size * sizeof(int));
-            // memset(Pk, 0, max_pattern_size * sizeof(int));
             Pk = new_Pk;
 
             int *new_Pm = realloc(Pm, 2 * max_pattern_size * sizeof(int));
-            // memset(Pk, 0, max_pattern_size * sizeof(int));
             Pm = new_Pm;
         }
         // save Pj index to output
@@ -441,7 +437,7 @@ int lzwd_encode(int *buffer_in, int nbytes, int *buffer_out) {
         }
         nextIndex++;
 
-        // TODO: if dict full, clear and start from 257
+        // if dict full, clear and start from 257
         if (nextIndex == DICT_SIZE) {
             dict_free(dictionary);
             free(dictionary);

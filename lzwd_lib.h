@@ -8,19 +8,22 @@
 #define LZWD_LIB
 
 // DEFINES
-#define BLOCK_SIZE 64000
+#define BLOCK_SIZE_DEFAULT 64000
 #define DEBUG_TXT "\x1b[33m"
 #define RESET_TXT "\x1b[0m"
 #define USAGE_MSG "Usage: ./lzwd <filename-to-compress> [options]\nOptions:\n -d: debug mode\n -f: force rle encoding\n -s <block size>: reading block size. MIN: 64Kb\n"
 #define DICT_SIZE 4096
 
 extern int debugflag;
+extern int sizeflag;
+extern int textflag;
 
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h" //for file names concatenation
-#include "time.h"   //for execution timing
-#include "unistd.h"
+#include <getopt.h> //for cmd arguments parsing
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h> //for file names concatenation
+#include <time.h>   //for execution timing
+#include <unistd.h>
 
 typedef unsigned char byte; // from 0 to 255
 

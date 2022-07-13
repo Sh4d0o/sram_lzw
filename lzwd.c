@@ -8,27 +8,31 @@
 
 int debugflag = 0; // if true use debug moode
 int sizeflag = 0;  // if true use costum block size
+int textflag = 0;  // if true present inputs and outputs
 
 int main(int argc, char *argv[]) {
-    //---Program variables---//
-    clock_t t_start = clock(), t_end; // clocks for executing time calculations
 
+    clock_t t_start = clock(), t_end; // clocks for executing time calculations
     FILE *src_file, *dest_file;
     int block_size = 0;
     int src_size = 0, dest_size = 0, block_count = 0, last_block_size = 0; // output auxiliars
 
     // 1. read and interpret the input
     int opt;
-    while ((opt = getopt(argc, argv, "ds:")) != -1) {
+    while ((opt = getopt(argc, argv, "dts:")) != -1) {
         switch (opt) {
         case 'd':
             debugflag = 1;
-            pdebug(debugflag, "Program iniciated in debug mode.\n");
+            printf(DEBUG_TXT "Program iniciated in debug mode.\n" RESET_TXT);
+            break;
+        case 't':
+            textflag = 1;
+            printf(DEBUG_TXT "Program iniciated in text mode.\n" RESET_TXT);
             break;
         case 's':
             sizeflag = 1;
             block_size = atoi(optarg);
-            pdebug(debugflag, "Using costum block size.");
+            printf(DEBUG_TXT "Using costum block size of %d.\n" RESET_TXT, block_size);
             break;
         case '?':
             printf("%s\n", USAGE_MSG);
@@ -57,7 +61,6 @@ int main(int argc, char *argv[]) {
     char *src_name = malloc(strlen(argv[optind]));
     strcpy(src_name, argv[optind]);
     char *filename = strtok(argv[optind], ".");
-    // printf("filename: %s\ninput: %s\n", filename, argv[optind]); // CLEAR
 
     // 3. CREATE AND OPEN destination file with ".lzwd" extension
     int namesize = strlen(filename);
@@ -65,7 +68,6 @@ int main(int argc, char *argv[]) {
     strcpy(compress_name, filename);
     strcat(compress_name, ".lzwd");
     dest_file = fopen(compress_name, "w");
-    // printf("dest_path: %s\n", dest_path); // CLEAR
     if (!dest_file) {
         printf("Unable to create destination file.\n");
         return 1;
@@ -73,15 +75,15 @@ int main(int argc, char *argv[]) {
 
     // 4. Block Read
     if (!sizeflag) {
-        block_size = BLOCK_SIZE;
+        block_size = BLOCK_SIZE_DEFAULT;
     }
     size_t nbytes = 0; // quantity of bytes read in block
-    int *buffer_in = malloc(sizeof(int) * BLOCK_SIZE);
-    int *buffer_out = malloc(sizeof(int) * BLOCK_SIZE);
+    int *buffer_in = malloc(sizeof(int) * block_size);
+    int *buffer_out = malloc(sizeof(int) * block_size);
     int output_size = 0;
 
     // 5. loop blocks of bytes until EOF 'aka' reading a block of 0 bytes
-    while ((nbytes = fread(buffer_in, 1, BLOCK_SIZE, src_file)) > 0) {
+    while ((nbytes = fread(buffer_in, 1, block_size, src_file)) > 0) {
 
         block_count++;
         if (debugflag) {
@@ -100,10 +102,20 @@ int main(int argc, char *argv[]) {
         last_block_size = nbytes;
 
         // 5.3 write encoded block to output file
-        // TODO: parse output buffer to short int
-        // fwrite(buffer_out, output_size, 1, dest_file);
+        // TODO: parse out_buffer to short int
+        short *short_buffer_out = malloc(sizeof(short) * output_size);
+        for (int i = 0; i < output_size; i++) {
+            short_buffer_out[i] = (int *)buffer_out[i];
+        }
+        // for (int i = 0; i < output_size; i++) {
+        //     printf("%d-", short_buffer_out[i]);
+        // }
 
-        if (debugflag) {
+        fwrite(short_buffer_out, 1, sizeof(short) * output_size, dest_file);
+
+        free(short_buffer_out);
+
+        if (textflag || debugflag) {
             printf("Output block %d: \n", block_count);
             for (int b = 0; b < output_size; b++) {
                 printf("%d ", buffer_out[b]);
