@@ -1,7 +1,7 @@
 /**
  * author: shadolaptop
  * created: 18-03-2022
- * project: File compression (LZWd algorithm)
+ * project: File compression (LZW algorithm)
  **/
 
 #include "lzwd_lib.h"
@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
     int namesize = strlen(filename);
     char *compress_name = malloc(namesize + 6);
     strcpy(compress_name, filename);
-    strcat(compress_name, ".lzwd");
+    strcat(compress_name, ".lzw");
     dest_file = fopen(compress_name, "w");
     if (!dest_file) {
         printf("Unable to create destination file.\n");
@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
             printf("\n");
         }
         // 5.1 process block
-        output_size = lzwd_encode(buffer_in, nbytes, buffer_out);
+        output_size = lzw_encode(buffer_in, nbytes, buffer_out);
 
         // 5.2 save size of last block and total sizes
         src_size += nbytes;
@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
         // TODO: parse out_buffer to short int
         short *short_buffer_out = malloc(sizeof(short) * output_size);
         for (int i = 0; i < output_size; i++) {
-            short_buffer_out[i] = buffer_out[i];
+            short_buffer_out[i] = (int *)buffer_out[i];
         }
         // for (int i = 0; i < output_size; i++) {
         //     printf("%d-", short_buffer_out[i]);

@@ -17,6 +17,7 @@
 extern int debugflag;
 extern int sizeflag;
 extern int textflag;
+extern int lzwflag;
 
 #include <getopt.h> //for cmd arguments parsing
 #include <stdio.h>
@@ -53,7 +54,6 @@ int compare_pattern(int *pattern_x, int size_x, int *pattern_y, int size_y);
 void concat_pattern(int *pattern_x, int size_x, int *pattern_y, int size_y, int *result);
 
 int lzwd_encode(int *buffer_in, int nbytes, int *buffer_out);
-
-void pdebug(int debug, char *message);
+int lzw_encode(int *buffer_in, int nbytes, int *buffer_out);
 
 #endif

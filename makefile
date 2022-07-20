@@ -1,9 +1,16 @@
 CC = gcc #compiler to use
 CFLAGS = -g -Wall #compiler flags
-TARGET = lzwd
+TARGET = lzwd #name of executable
+TARGET2 = lzw #name of executable
 
-build: lzwd.c lzwd_lib.c
+build: lzw.c lzwd_lib.c
+	${CC} $(CFLAGS) lzw.c lzwd_lib.c -o $(TARGET2)
+
+lzwd: lzwd.c lzwd_lib.c
 	${CC} $(CFLAGS) lzwd.c lzwd_lib.c -o $(TARGET)
 
+lzw: lzw.c lzwd_lib.c
+	${CC} $(CFLAGS) lzw.c lzwd_lib.c -o $(TARGET2)
+
 clean:
-	rm -rf lzwd.o lzwd *.lzwd
+	rm -rf *.lzwd *.lzw
