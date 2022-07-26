@@ -13,13 +13,6 @@
  **/
 int hash(int *key, int size) {
     unsigned int hash_value = 0;
-    // if (debugflag) {
-    //     printf("hashstring:");
-    //     for (int i = 0; i < size; i++) {
-    //         printf("%d", key[i]);
-    //     }
-    //     printf("\n");
-    // }
     for (int i = 0; i < size; i++) {
         hash_value += key[i];
         hash_value = (hash_value * key[i]) % DICT_SIZE;
@@ -224,9 +217,6 @@ void dict_print(dict *dictionary) {
                     for (int a = 0; a < d_entry->length; a++) {
                         printf("%d ", d_entry->key[a]);
                     }
-                    // for (int a = d_entry->length - 1; a > -1; a--) {
-                    //     printf("%d ", d_entry->key[a]);
-                    // }
                     printf("]\n");
                 }
                 // next in chain
@@ -253,8 +243,6 @@ void dict_free(dict *dictionary) {
                 d_entry = d_entry->next;
             }
         }
-        // if (debugflag)
-        //     printf("Cleared slot[%d].\n", i);
     }
     free(dictionary->entries);
     if (debugflag)
@@ -365,7 +353,6 @@ int lzwd_encode(int *buffer_in, int nbytes, int *buffer_out) {
         if (max_pattern_size < (size_j + size_k)) {
             max_pattern_size = size_j + size_k;
 
-            // TODO-review memory manipulation
             int *new_Pj = realloc(Pj, max_pattern_size * sizeof(int));
             Pj = new_Pj;
 

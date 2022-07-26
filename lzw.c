@@ -102,14 +102,10 @@ int main(int argc, char *argv[]) {
         last_block_size = nbytes;
 
         // 5.3 write encoded block to output file
-        // TODO: parse out_buffer to short int
         short *short_buffer_out = malloc(sizeof(short) * output_size);
         for (int i = 0; i < output_size; i++) {
             short_buffer_out[i] = (int *)buffer_out[i];
         }
-        // for (int i = 0; i < output_size; i++) {
-        //     printf("%d-", short_buffer_out[i]);
-        // }
 
         fwrite(short_buffer_out, 1, sizeof(short) * output_size, dest_file);
 

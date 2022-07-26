@@ -1,8 +1,9 @@
 .vscode/*
-compressed/
-samples/
 *.lzwd
 lzwd
-tsm_lzwd.code-workspace
+*.lzw
+lzw
 *.txt
 prints/
+*.jpg
+*.mp4
